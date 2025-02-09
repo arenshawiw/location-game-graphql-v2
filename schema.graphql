@@ -1,0 +1,348 @@
+
+input CreateThing {
+  id: ID!
+  name: String
+}
+
+type SomeType {
+  id: ID!
+  name: String
+  position: Int
+  place: Int
+  enumStuff: SomeEnum
+}
+
+enum SomeEnum {
+  one
+  two
+  three
+}
+
+
+enum Difficulty {
+  EASY,
+  STANDARD
+}
+
+type Game {
+  difficulty: Difficulty!, # Initial setup
+  runTimeMinutes: Int!, # Initial setup
+  routeId: ID # After route created..
+  routeName: String, # After route created..
+}
+
+type Team {
+  _id: ID!
+  name: String,
+  primaryGroup: String,
+  secondaryGroup: String
+  game: Game
+}
+
+enum LocationColour {
+  BROWN,
+  LIGHT_BLUE,
+  PINK,
+  ORANGE,
+  RED,
+  YELLOW,
+  GREEN,
+  DARK_BLUE,
+  DARK_PURPLE,
+  WHITE
+}
+
+type Location {
+  _id: ID!
+  name: String!,
+  lng: String!,
+  lat: String!
+  colour: LocationColour!,
+  clue: Clue!,
+  challengeType: ChallengeType!
+  safetyInformation: String
+  challenge: Challenge,
+}
+
+interface Challenge {
+  title: String,
+  description: String,
+  maxPts: Int
+}
+
+type ch_Trust implements Challenge{
+  title: String,
+  description: String,
+  maxPts: Int
+}
+
+input ch_NumericInput {
+  title: String!,
+  description: String!,
+  maxPts: Int!
+  numericAnswer: Int!
+  tenPercentPts: Int!
+  twentyPercentPts: Int!
+  thirtyPercentPts: Int!
+}
+
+input ch_MultipleChoiceInput {
+  title: String!,
+  description: String!,
+  maxPts: Int!
+  options: [String!]!
+  answer: String!
+}
+
+input ch_MultipleChoiceImageInput {
+  title: String!,
+  description: String!,
+  maxPts: Int!
+  options: [String!]!
+  answer: String!
+  imageObjectKey: String!
+}
+
+input ch_TimedInput {
+  title: String!,
+  description: String!,
+  maxPts: Int!
+  minutes: Int!
+  seconds: Int!
+}
+
+input ChallengeInput {
+  type: ChallengeType!,
+  numeric: ch_NumericInput,
+  multipleChoice: ch_MultipleChoiceInput,
+  multipleChoiceImage: ch_MultipleChoiceImageInput,
+  timed: ch_TimedInput,
+  trust: ch_TrustInput,
+}
+
+input ch_TrustInput {
+  title: String!,
+  description: String!,
+  maxPts: Int!
+}
+
+type ch_Numeric implements Challenge{
+  title: String,
+  description: String,
+  maxPts: Int
+  numericAnswer: Int!
+  tenPercentPts: Int!
+  twentyPercentPts: Int!
+  thirtyPercentPts: Int!
+}
+
+type ch_MultipleChoice implements Challenge {
+  title: String,
+  description: String,
+  maxPts: Int
+  options: [String!]!
+  answer: String!
+}
+
+type ch_MultipleChoiceImage implements Challenge {
+  title: String,
+  description: String,
+  maxPts: Int
+  options: [String!]!
+  answer: String!
+  imageObjectKey: String!
+  signedUrl: String!
+}
+
+type ch_Timed implements Challenge {
+  title: String,
+  description: String,
+  maxPts: Int
+  minutes: Int!
+  seconds: Int!
+}
+
+type Clue {
+  clueOne: String!,
+  clueTwo: String,
+  clueImageObjectKey: String!,
+  signedImageUrl: String!
+  clueOnePts: Int!,
+  clueTwoPts: Int!,
+  clueImagePts: Int,
+}
+
+type Route {
+  _id: ID!
+  name: String!,
+  startLocation: Location!
+  endLocation: Location!
+  intermediateLocations: [Location!]!
+}
+
+type User {
+  teamId: ID
+  teamName: String
+  _id: ID!
+  username: String!
+  password: String!
+  role: String!
+}
+
+type RouteCreateResponse {
+  _id: ID!
+  name: String!,
+  startLocation: ID!
+  endLocation: ID!
+  intermediateLocations: [ID!]!
+}
+
+input CreateRouteInput {
+  name: String!,
+  startLocation: String!
+  endLocation: String!
+  intermediateLocations: [String!]!
+}
+
+type Query {
+  teams: [Team]
+  primaryGroups: [String],
+  secondaryGroups: [String],
+  locations(filter: FilterLocation): [Location],
+  locationColours: [LocationColour],
+  locationChallengeTypes: [ChallengeType],
+  filterTeams(teamName: String, primaryGroupName: String, secondaryGroupName: String, difficulty: Difficulty, runTimeMinutes: Int, sortBy: TeamsSortOptions, sortDirection: Sort, id: String): [Team!]!
+  routes(routeName: String, routeId: ID): [Route!]!
+  fetchUploadSignedUrl(filename: String!): String!
+  fetchUsers(role: String, teamId: String, _id: String): [User!]!
+  getGames: [GameInstance!]!
+}
+
+input CreateTeamInput {
+  name: String!
+  primaryGroup: String!
+  secondaryGroup: String,
+  difficulty: Difficulty!,
+  runTimeMinutes: Int!
+}
+
+input FilterTeamsInput {
+  name: String,
+  primaryGroupName: String,
+  secondaryGroupName: String,
+  difficulty: Difficulty,
+  runTimeMinutes: Int,
+  sortBy: TeamsSortOptions,
+  sortDirection: Sort,
+  _id: String,
+}
+
+input FilterLocation {
+  nameSearchTerm: String,
+  colour: LocationColour,
+  challengeType: ChallengeType,
+  sortDirection: Sort,
+  sortBy: LocationSortOptions
+  _id: String,
+}
+
+enum LocationSortOptions {
+  name,
+  colour,
+  challengeType,
+  clueOnePts
+}
+
+enum TeamsSortOptions {
+  name,
+  primaryGroup,
+  secondaryGroup,
+  runTimeMinutes,
+  difficulty
+}
+
+enum ChallengeType {
+  NO_CHALLENGE,
+  NUMERIC,
+  TIMED,
+  TRUST,
+  MULTIPLE_CHOICE,
+  MULTIPLE_CHOICE_IMAGE
+}
+
+
+enum Sort {
+  ASC,
+  DESC
+}
+
+input CreateLocationInput {
+  name: String!,
+  colour: LocationColour!
+  clueImageObjectKey: String! # TODO update FE
+  lat: Float!
+  lng: Float!
+  safetyInformation: String
+  clueOne: String!
+  clueTwo: String!
+  clueOnePts: Int!
+  clueTwoPts: Int!
+  clueImagePts: Int!
+  challenge: ChallengeInput!
+}
+
+enum Status {
+  HIDDEN,
+  NOT_STARTED,
+  IN_PROGRESS,
+  ENDED,
+}
+
+input TeamRouteInput {
+  teamId: ID!
+  routeId: ID!
+}
+
+input GameInput {
+  name: String!
+  teams: [TeamRouteInput!]!
+}
+
+type GameInstance {
+  _id: ID!
+  name: String!
+  status: Status!
+  teams: [GameTeamRoute!]!
+
+}
+
+type GameTeamRoute {
+  teamId: ID!
+  routeId: ID!
+  name: String!
+  routeName: String!
+  primaryGroup: String!
+  secondaryGroup: String
+  startLocation: Location!
+  endLocation: Location!
+  intermediateLocations: [Location!]!
+  runTimeMinutes: Int!
+  endTimeEpochSeconds: Int
+  difficulty: Difficulty!
+}
+
+type Mutation {
+  createLocation(input: CreateLocationInput!): Location!,
+  editLocation(input: CreateLocationInput!, locationId: ID!): Location!,
+  deleteLocation(locationId: ID!): Boolean!,
+  deleteTeam(teamId: ID!): Boolean!,
+  createTeam(input: CreateTeamInput!): Team!,
+  updateTeam(teamId: String!, input: CreateTeamInput!): Team!,
+  createRoute(input: CreateRouteInput!): RouteCreateResponse!
+  editRoute(routeId: ID!, input: CreateRouteInput!): RouteCreateResponse!
+  deleteRoute(routeId: ID!): Boolean!
+  generateUsers: Boolean!
+  createGame(input: GameInput): ID!
+  editGame(gameId: ID!, input: GameInput): ID!
+  updateGameStatus(gameId: ID!, status: Status!): ID!
+}
