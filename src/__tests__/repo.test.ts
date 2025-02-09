@@ -1,23 +1,12 @@
-import {MongoClient} from 'mongodb';
-import {MongoMemoryServer} from 'mongodb-memory-server';
-import {testServer} from './utils';
+import {BaseTest} from './utils';
 
-let mongoServer: MongoMemoryServer;
-let client: MongoClient;
-let db: any;
-// let server: ApolloServer;
-
+let baseTest = new BaseTest();
 beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    const mongoUri = mongoServer.getUri();
-    client = new MongoClient(mongoUri);
-    await client.connect();
-    db = client.db();
+    await baseTest.init();
 })
 
 afterAll(async () => {
-    await client.close();
-    await mongoServer.stop();
+    await baseTest.shutDown();
 })
 
 describe("Repository Template Functionality", () => {
@@ -26,19 +15,19 @@ describe("Repository Template Functionality", () => {
         //Arrange
         const query = `
         query Teams {
-  teams {
-    _id
-    game {
-      difficulty
-      routeId
-      routeName
-      runTimeMinutes
-    }
-    name
-    primaryGroup
-    secondaryGroup
-  }
-}
+          teams {
+            _id
+            game {
+              difficulty
+              routeId
+              routeName
+              runTimeMinutes
+            }
+            name
+            primaryGroup
+            secondaryGroup
+          }
+        }
         
         `;
         const variables = {
@@ -48,14 +37,12 @@ describe("Repository Template Functionality", () => {
             _entities: [{name: "Name"}],
         };
         //Act
-        const res = await testServer.executeOperation({
+        const res = await baseTest.server.executeOperation({
             query,
             variables,
 
         }, {
-            contextValue: {
-                db
-            }
+            contextValue: baseTest.getContext()
         });
         //Assert
         expect(res.body.kind).toEqual("single");
