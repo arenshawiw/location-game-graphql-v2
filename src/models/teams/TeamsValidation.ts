@@ -1,5 +1,5 @@
 import {throwGraphqlValidationError, ValidationAsync} from '../../utils/validation/index';
-import {CreateTeamInput, Team} from '../../__generated__/resolvers-types';
+import {CreateTeamInput} from '../../__generated__/resolvers-types';
 import {TeamsRepository} from './TeamsRepository';
 import {ObjectId} from 'mongodb';
 
@@ -15,23 +15,23 @@ export class TeamsValidation extends ValidationAsync<CreateTeamInput, CreateTeam
     async validateCreate(team: CreateTeamInput): Promise<void> {
         await this.doesTeamExist(team.name);
         this.isRunTimeValid(team.runTimeMinutes);
-        if(this.errors.length > 0) {
+        if (this.errors.length > 0) {
             throwGraphqlValidationError(this.errors);
         }
     }
 
     async validateUpdate(team: CreateTeamInput, id: string): Promise<void> {
         const isPresent = await this.doesTeamIdExist(new ObjectId(id).toHexString());
-        if(isPresent) {
+        if (isPresent) {
             const originalTeam = await this.repo.findById(new ObjectId(id));
             const originalTeamName = originalTeam.name;
-            if(team.name.toLowerCase() !== originalTeamName.toLowerCase()) {
+            if (team.name.toLowerCase() !== originalTeamName.toLowerCase()) {
                 await this.doesTeamExist(team.name)
             }
             this.isRunTimeValid(team.runTimeMinutes);
         }
 
-        if(this.errors.length > 0) {
+        if (this.errors.length > 0) {
             throwGraphqlValidationError(this.errors);
         }
 
@@ -59,7 +59,7 @@ export class TeamsValidation extends ValidationAsync<CreateTeamInput, CreateTeam
 
     private async doesTeamIdExist(id: string): Promise<boolean> {
         const team = await this.repo.findById(new ObjectId(id));
-        if (team === undefined) {
+        if (team === undefined || team === null) {
             this.errors.push({
                 field: "teamId",
                 message: `Team with id: '${id}' does not exist`,
